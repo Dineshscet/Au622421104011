@@ -1,0 +1,67 @@
+Server side
+from flask import Flask, request, jsonify
+from PIL import Image
+import face_recognition
+
+app = Flask(__name__)
+
+@app.route('/recognize', methods=['POST'])
+def recognize_face():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image provided'})
+
+    image = request.files['image'].read()
+    unknown_image = face_recognition.load_image_file(image)
+    unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
+
+    # Compare with known encodings
+    # Assuming you have stored known encodings and identities in a database or elsewhere
+    
+    # For example:
+    # known_encodings = ...
+    # known_identities = ...
+    # results = face_recognition.compare_faces(known_encodings, unknown_encoding)
+    # matched_index = results.index(True)
+    # matched_identity = known_identities[matched_index]
+    
+    matched_identity = "Unknown"
+    
+    return jsonify({'identity': matched_identity})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+client side
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Recognition</title>
+</head>
+<body>
+    <h1>Facial Recognition</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="recognize()">Recognize</button>
+    <div id="result"></div>
+
+    <script>
+        function recognize() {
+            var fileInput = document.getElementById('imageInput');
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/recognize', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerText = 'Matched Identity: ' + data.identity;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
