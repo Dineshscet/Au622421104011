@@ -1,0 +1,25 @@
+!pip install face_recognition
+import face_recognition
+from google.colab import drive
+drive.mount('/content/drive')
+import cv2
+image = face_recognition.load_image_file("/content/drive/MyDrive/test.jpg")
+known_encoding = face_recognition.face_encodings(image)[0]
+
+video_capture = cv2.VideoCapture(0)
+
+ret, frame = video_capture.read()
+
+face_locations = face_recognition.face_locations(frame)
+face_encodings = face_recognition.face_encodings(frame, face_locations)
+
+for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+    matches = face_recognition.compare_faces([known_encoding], face_encoding)
+    if matches[0]:
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+        cv2.putText(frame, "Known Face", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2)
+
+cv2.imshow('Video', frame)
+
+video_capture.release()
+cv2.destroyAllWindows()
